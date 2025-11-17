@@ -1,59 +1,31 @@
-name: Deploy Frontend
+name: build-deploy
 
 on:
   push:
-    branches: ["main"]
-
-permissions:
-  pages: write
-  id-token: write
+    branches:
+      - main
 
 jobs:
-  build-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build project
         run: npm run build
 
-      - name: Upload build artifact
+      - name: Upload build folder
         uses: actions/upload-artifact@v4
         with:
-          name: github-pages
+          name: build-folder
           path: dist/
-
-  deploy:
-    needs: build-deploy
-    runs-on: ubuntu-latest
-    environment: github-pages
-
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: github-pages
-          path: ./build
-
-      - name: Configure git identity (Fix exit code 128)
-        run: |
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-
-      - name: Upload pages artifact
-        uses: actions/upload-pages-artifact@v1
-        with:
-          path: ./build
-
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v1
